@@ -11,13 +11,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentatio
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{81D44F48-E174-477F-A447-C726617B9009}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Library.Domain", "Book\Library.Domain.csproj", "{D905279D-DDC9-4A19-A0CB-47D7E30D0887}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Library.Domain", "Cores\Library.Domain\Library.Domain.csproj", "{D905279D-DDC9-4A19-A0CB-47D7E30D0887}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Library.WebAPI", "Library.WebAPI\Library.WebAPI.csproj", "{5BEC559E-C048-42AA-AFE7-AC4F2878253C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Library.WebAPI", "Presentation\Library.WebAPI\Library.WebAPI.csproj", "{5BEC559E-C048-42AA-AFE7-AC4F2878253C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Library.Data", "Notes.Persistence\Library.Data.csproj", "{B620846C-EEC7-4977-BC72-74D6537609FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Library.Data", "Infrustructure\Library.Data\Library.Data.csproj", "{B620846C-EEC7-4977-BC72-74D6537609FF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Library.Application", "Library.Application\Library.Application.csproj", "{A6DCD4AF-4F75-49D0-8395-4831D66D22EC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Library.Application", "Cores\Library.Application\Library.Application.csproj", "{A6DCD4AF-4F75-49D0-8395-4831D66D22EC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
