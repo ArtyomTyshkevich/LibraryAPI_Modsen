@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -60,5 +61,14 @@ namespace Library.Domain.Validators.ValidatorsHelpers
             var validExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
             return validExtensions.Any(ext => fileName!.EndsWith(ext, StringComparison.OrdinalIgnoreCase));
         }
+        public static bool BeAValidImage(IFormFile? file)
+        {
+            if (file == null) return false;
+
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+            var extension = System.IO.Path.GetExtension(file.FileName).ToLowerInvariant();
+            return allowedExtensions.Contains(extension);
+        }
+
     }
 }

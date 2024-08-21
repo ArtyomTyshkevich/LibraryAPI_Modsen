@@ -22,7 +22,7 @@ namespace Library.Domain.Validators
 
             RuleFor(author => author.Country)
                 .NotEmpty().WithMessage("Country is required.")
-                .MaximumLength(30).WithMessage("Country cannot be longer than 50 characters.");
+                .MaximumLength(30).WithMessage("Country cannot be longer than 30 characters.");
         }
     }
 }

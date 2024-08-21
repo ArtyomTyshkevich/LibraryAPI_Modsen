@@ -1,19 +1,20 @@
-﻿using System;
+﻿using Library.Domain.Entities;
+using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
 
-namespace Library.Domain.Entities
+namespace Library.Domain.DTOs
 {
-    public class User : IdentityUser<long>
+    public class UserDTO
     {
+        public Guid Id { get; set; }
         public string FirstName { get; set; } = null!;
         public string LastName { get; set; } = null!;
         public string? MiddleName { get; set; }
+        public string Email { get; set; } = null!;
         public List<Book> Books { get; set; } = new List<Book>();
-        public string? RefreshToken { get; set; }
-        public DateTime RefreshTokenExpiryTime { get; set; }
     }
 }

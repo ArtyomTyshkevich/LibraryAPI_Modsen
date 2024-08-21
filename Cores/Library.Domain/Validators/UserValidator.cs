@@ -9,14 +9,14 @@ namespace Library.Domain.Validators
         {
             RuleFor(user => user.FirstName)
                 .NotEmpty().WithMessage("First Name is required.")
-                .MaximumLength(50).WithMessage("First Name cannot be longer than 50 characters.");
+                .MaximumLength(20).WithMessage("First Name cannot be longer than 20 characters.");
 
             RuleFor(user => user.LastName)
                 .NotEmpty().WithMessage("Last Name is required.")
-                .MaximumLength(50).WithMessage("Last Name cannot be longer than 50 characters.");
+                .MaximumLength(20).WithMessage("Last Name cannot be longer than 20 characters.");
 
             RuleFor(user => user.MiddleName)
-                .MaximumLength(50).WithMessage("Middle Name cannot be longer than 50 characters.")
+                .MaximumLength(20).WithMessage("Middle Name cannot be longer than 20 characters.")
                 .When(user => !string.IsNullOrEmpty(user.MiddleName));
 
             RuleFor(user => user.Email)

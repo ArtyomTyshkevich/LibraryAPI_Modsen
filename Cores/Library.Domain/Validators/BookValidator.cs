@@ -15,7 +15,7 @@ namespace Library.Domain.Validators
 
             RuleFor(book => book.Name)
                 .NotEmpty().WithMessage("Name is required.")
-                .MaximumLength(100).WithMessage("Name cannot be longer than 100 characters.");
+                .MaximumLength(50).WithMessage("Name cannot be longer than 50 characters.");
 
 
             RuleFor(book => book.Description)
