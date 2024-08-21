@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using Library.Domain.Entities;
 using Library.Domain.Validators.ValidatorsHelpers;
-using System;
 
 namespace Library.Domain.Validators
 {

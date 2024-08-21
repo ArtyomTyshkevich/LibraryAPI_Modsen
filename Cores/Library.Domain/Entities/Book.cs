@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace Library.Domain.Entities
 {
@@ -12,9 +8,9 @@ namespace Library.Domain.Entities
         public string ISBN { get; set; } = "";
         public string Name { get; set; } = "";
         public string Description { get; set; } = "";
-        public Author Author { get; set; } = new Author();
-        public DateTime StartRentDateTime { get; set; }
-        public DateTime EndRentDateTime { get; set; }
+        public Author? Author { get; set; } = null;
+        public DateTime? StartRentDateTime { get; set; } = null;
+        public DateTime? EndRentDateTime { get; set; } = null;
         public string? ImageFileName { get; set; } = null;
     }
 }

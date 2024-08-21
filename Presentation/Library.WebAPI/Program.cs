@@ -1,5 +1,8 @@
+using Library.Application.Mappers;
 using Library.Data.Context;
+using Library.Data.Repositories.UnitOfWork;
 using Library.Domain.Entities;
+using Library.Domain.Interfaces;
 using Library.Domain.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -7,19 +10,30 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using FluentValidation.AspNetCore;
 
 using System.Text;
+using Library.Domain.Validators;
+using FluentValidation;
+using Library.Domain.DTOs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
+
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IValidator<User>, UserValidator>();
+builder.Services.AddScoped<IValidator<Book>, BookValidator>();
+builder.Services.AddScoped<IValidator<Author>, AuthorValidator>();
+builder.Services.AddScoped<IValidator<UserDTO>, UserDTOValidator>();
+builder.Services.AddScoped<IValidator<BookDTO>, BookDTOValidator>();
+builder.Services.AddFluentValidationAutoValidation();
+
 builder.Services.AddDbContext<LibraryDbContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddAuthentication(opt => {
     opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -89,10 +103,11 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Ensure roles are created
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<long>>>();
-    var roles = new[] { "Admin", "User","Moder" };
+    var roles = new[] { "Admin", "User", "Moder" };
     foreach (var role in roles)
     {
         if (!await roleManager.RoleExistsAsync(role))

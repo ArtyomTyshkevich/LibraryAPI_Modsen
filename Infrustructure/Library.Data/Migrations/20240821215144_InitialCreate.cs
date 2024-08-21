@@ -58,7 +58,7 @@ namespace Library.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Author",
+                name: "Authors",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -68,7 +68,7 @@ namespace Library.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Author", x => x.Id);
+                    table.PrimaryKey("PK_Authors", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -185,9 +185,9 @@ namespace Library.Data.Migrations
                     ISBN = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
-                    AuthorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    StartRentDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EndRentDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    AuthorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    StartRentDateTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    EndRentDateTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ImageFileName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     UserId = table.Column<long>(type: "bigint", nullable: true)
                 },
@@ -201,11 +201,11 @@ namespace Library.Data.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Books_Author_AuthorId",
+                        name: "FK_Books_Authors_AuthorId",
                         column: x => x.AuthorId,
-                        principalTable: "Author",
+                        principalTable: "Authors",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -286,7 +286,7 @@ namespace Library.Data.Migrations
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
-                name: "Author");
+                name: "Authors");
         }
     }
 }

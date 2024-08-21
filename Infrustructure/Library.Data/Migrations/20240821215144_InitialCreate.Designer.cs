@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Library.Data.Migrations
 {
     [DbContext(typeof(LibraryDbContext))]
-    [Migration("20240820193351_InitialCreate")]
+    [Migration("20240821215144_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -46,7 +46,7 @@ namespace Library.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Author");
+                    b.ToTable("Authors");
                 });
 
             modelBuilder.Entity("Library.Domain.Entities.Book", b =>
@@ -55,7 +55,7 @@ namespace Library.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("AuthorId")
+                    b.Property<Guid?>("AuthorId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
@@ -63,7 +63,7 @@ namespace Library.Data.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
-                    b.Property<DateTime>("EndRentDateTime")
+                    b.Property<DateTime?>("EndRentDateTime")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("ISBN")
@@ -80,7 +80,7 @@ namespace Library.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<DateTime>("StartRentDateTime")
+                    b.Property<DateTime?>("StartRentDateTime")
                         .HasColumnType("datetime2");
 
                     b.Property<long?>("UserId")
@@ -320,10 +320,9 @@ namespace Library.Data.Migrations
             modelBuilder.Entity("Library.Domain.Entities.Book", b =>
                 {
                     b.HasOne("Library.Domain.Entities.Author", "Author")
-                        .WithMany()
+                        .WithMany("Books")
                         .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Library.Domain.Entities.User", null)
                         .WithMany("Books")
@@ -382,6 +381,11 @@ namespace Library.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Library.Domain.Entities.Author", b =>
+                {
+                    b.Navigation("Books");
                 });
 
             modelBuilder.Entity("Library.Domain.Entities.User", b =>
