@@ -5,7 +5,7 @@ using Library.Domain.Entities;
 
 namespace Library.Data.Context
 {
-    public class LibraryDbContext : IdentityDbContext<User, IdentityRole, string>
+    public class LibraryDbContext : IdentityDbContext<User, IdentityRole<long>, long>
     {
         public LibraryDbContext(DbContextOptions<LibraryDbContext> options)
             : base(options)
@@ -15,6 +15,7 @@ namespace Library.Data.Context
         public DbSet<User> Users { get; set; }
         public DbSet<Book> Books { get; set; }
         public DbSet<Author> Authors { get; set; }
+        public DbSet<Massage> Massages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

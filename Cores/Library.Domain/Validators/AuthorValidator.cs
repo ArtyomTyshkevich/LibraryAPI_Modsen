@@ -11,9 +11,9 @@ namespace Library.Domain.Validators
             RuleFor(author => author.Name)
                 .NotEmpty().WithMessage("Name is required.")
                 .MaximumLength(20).WithMessage("Name cannot be longer than 20 characters.");
-
-            RuleFor(author => author.Bithday)
-                .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.Today))
+            
+            RuleFor(author => author.Birthday)
+                .LessThanOrEqualTo(DateTime.Today)
                 .WithMessage("Birthday must be in the past.");
 
             RuleFor(author => author.Country)

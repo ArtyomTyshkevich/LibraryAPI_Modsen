@@ -3,7 +3,6 @@ using Library.Data.Context;
 using Library.Domain.DTOs;
 using Library.Domain.Entities;
 using Library.Domain.Interfaces;
-using Library.Domain.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -70,6 +69,7 @@ namespace Library.WebAPI.Controllers
 
         [HttpPost]
         [Route("Create")]
+        [Authorize(Policy = "ModerAndHigher")]
         public async Task<IActionResult> CreateBook(Book book)
         {
             await _unitOfWork.Books.Create(book);
@@ -78,6 +78,7 @@ namespace Library.WebAPI.Controllers
 
         [HttpPatch]
         [Route("Update")]
+        [Authorize(Policy = "ModerAndHigher")]
         public async Task<IActionResult> UpdateBook(Book book)
         {
             await _unitOfWork.Books.Update(book);
@@ -86,6 +87,7 @@ namespace Library.WebAPI.Controllers
 
         [HttpDelete]
         [Route("Delete")]
+        [Authorize(Policy = "ModerAndHigher")]
         public async Task<IActionResult> DeleteBook(Guid Id)
         {
             Book? book = await _unitOfWork.Books.Get(Id);
@@ -99,7 +101,8 @@ namespace Library.WebAPI.Controllers
 
         [HttpPatch]
         [Route("IssueBookToUser")]
-        public async Task<IActionResult> IssueBookToUser(Guid bookId, string userId)
+        [Authorize(Policy = "UserOnly")]
+        public async Task<IActionResult> IssueBookToUser(Guid bookId, long userId)
         {
             var user = await _dbContext.Users
                                  .Include(u => u.Books)

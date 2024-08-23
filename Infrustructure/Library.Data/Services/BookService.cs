@@ -44,7 +44,7 @@ namespace Library.Domain.Services
             await _libraryDbContext.SaveChangesAsync();
             return;
         }
-        public async Task<string> AddBookToUser(Guid bookId, string userId)
+        public async Task<string> AddBookToUser(Guid bookId, long userId)
         {
             var user = await _libraryDbContext.Users
                                  .Include(u => u.Books)

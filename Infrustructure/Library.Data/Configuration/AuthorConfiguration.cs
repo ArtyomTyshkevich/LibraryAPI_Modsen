@@ -12,7 +12,7 @@ public class AuthorConfiguration : IEntityTypeConfiguration<Author>
             .IsRequired()
             .HasMaxLength(200);
 
-        builder.Property(a => a.Bithday)
+        builder.Property(a => a.Birthday)
             .IsRequired();
 
         builder.Property(a => a.Country)
