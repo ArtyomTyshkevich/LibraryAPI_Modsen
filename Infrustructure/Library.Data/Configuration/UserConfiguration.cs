@@ -26,7 +26,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.RefreshToken)
             .HasMaxLength(200);
 
-        builder.Property(u => u.RefreshTokenExpiryTime)
+        builder.Property(u => u.RefreshTokenExpiry)
             .IsRequired();
     }
 }

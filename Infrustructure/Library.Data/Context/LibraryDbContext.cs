@@ -5,7 +5,7 @@ using Library.Domain.Entities;
 
 namespace Library.Data.Context
 {
-    public class LibraryDbContext : IdentityDbContext<User, IdentityRole<long>, long>
+    public class LibraryDbContext : IdentityDbContext<User, IdentityRole, string>
     {
         public LibraryDbContext(DbContextOptions<LibraryDbContext> options)
             : base(options)

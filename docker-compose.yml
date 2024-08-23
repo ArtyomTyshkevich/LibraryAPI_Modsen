@@ -1,0 +1,35 @@
+version: '3.4'
+
+networks:
+  backend:
+
+services:
+  librarydb:
+    container_name: librarydb-db
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=password@12345#
+    networks:
+      - backend
+    ports:
+      - "8001:1433" 
+
+  library.webapi:
+    container_name: Library-api
+    image: ${DOCKER_REGISTRY-}librarywebapi
+    build:
+      context: .
+      dockerfile: Presentation/Library.WebAPI/Dockerfile
+    networks:
+      - backend
+    environment:
+      - Jwt__Secret=superSecretKey@345432242344324245
+      - Jwt__Issuer=https://localhost:5001
+      - Jwt__Audience=https://localhost:5001
+      - Jwt__TokenValidityInMinutes=30
+      - ConnectionStrings__DefaultConnection=Server=librarydb;Database=LibraryDb;User Id=sa;Password=password@12345#;TrustServerCertificate=True;
+    depends_on:
+      - librarydb
+    ports:
+      - "8002:8080"

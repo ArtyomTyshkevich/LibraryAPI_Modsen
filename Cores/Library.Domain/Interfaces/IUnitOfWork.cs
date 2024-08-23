@@ -1,5 +1,4 @@
-﻿
-using Library.Domain.Entities;
+﻿using Library.Domain.Entities;
 
 namespace Library.Domain.Interfaces
 {

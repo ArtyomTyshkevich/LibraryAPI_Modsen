@@ -8,9 +8,8 @@ public class BookConfiguration : IEntityTypeConfiguration<Book>
     {
         builder.HasKey(b => b.Id);
 
-        builder.Property(b => b.ISBN)
-            .IsRequired()
-            .HasMaxLength(20);
+        builder.HasIndex(b => b.ISBN)
+             .IsUnique();
 
         builder.Property(b => b.Name)
             .IsRequired()

@@ -20,9 +20,6 @@ namespace Library.Domain.Validators
             RuleFor(book => book.Description)
                 .MaximumLength(500).WithMessage("Description cannot be longer than 500 characters.");
 
-            RuleFor(book => book.Author)
-                .SetValidator(new AuthorValidator());
-
             RuleFor(book => book.StartRentDateTime)
                 .LessThanOrEqualTo(book => book.EndRentDateTime)
                 .WithMessage("Start rent date must be before or the same as the end rent date.");
