@@ -57,7 +57,6 @@ namespace Library.WebAPI.Controllers
         }
         [HttpPost]
         [Route("Create")]
-        [Authorize(Policy = "ModerAndHigher")]
         public async Task<IActionResult> CreateAuthor(Author author)
         {
             await _unitOfWork.Authors.Create(author);
@@ -65,7 +64,7 @@ namespace Library.WebAPI.Controllers
         }
         [HttpPatch]
         [Route("Update")]
-        [Authorize(Policy = "ModerAndHigher")]
+
         public async Task<IActionResult> UpdateAuthor(Author author)
         {
             await _unitOfWork.Authors.Update(author);
@@ -73,11 +72,10 @@ namespace Library.WebAPI.Controllers
         }
         [HttpDelete]
         [Route("Delete")]
-        [Authorize(Policy = "ModerAndHigher")]
         public async Task<IActionResult> DeleteAuthor(Guid id)
         {
-            Author author = await _unitOfWork.Authors.Get(id);
-            await _unitOfWork.Authors.Delete(author);
+            Author? author = await _unitOfWork.Authors.Get(id);
+            await _unitOfWork.Authors.Delete(author!);
             return Ok("Successfully deleted");
         }
         [HttpGet]

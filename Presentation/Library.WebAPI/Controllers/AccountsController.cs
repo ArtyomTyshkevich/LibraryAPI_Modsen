@@ -150,7 +150,6 @@ public class AccountsController : ControllerBase
     [Authorize]
     [HttpPost]
     [Route("revoke/{username}")]
-    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> Revoke(string username)
     {
         var user = await _userManager.FindByNameAsync(username);
@@ -162,10 +161,9 @@ public class AccountsController : ControllerBase
         return Ok();
     }
 
-    [Authorize]
     [HttpPost]
     [Route("revoke-all")]
-    [Authorize(Policy = "AdminOnly")]
+    [Authorize]
     public async Task<IActionResult> RevokeAll()
     {
         var users = _userManager.Users.ToList();

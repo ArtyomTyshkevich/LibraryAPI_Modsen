@@ -32,11 +32,11 @@ namespace Library.Data.Repositories
             return await _libraryDbContext.Authors.ToListAsync();
         }
 
-        public async Task<Author?> Get(Guid authorId)
+        public async Task<Author> Get(Guid authorId)
         {
             return await _libraryDbContext.Authors
                                            .Include(aut=>aut.Books)
-                                           .FirstOrDefaultAsync(a => a.Id == authorId);
+                                           .FirstAsync(a => a.Id == authorId);
         }
 
         public async Task Update(Author author)

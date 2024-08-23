@@ -22,7 +22,7 @@ namespace Library.Data.Repositories
         public async Task Delete(Book book)
         {
             _libraryDbContext.Books.Remove(book);
-            string solutionPath = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName;
+            string solutionPath = Directory.GetParent(Directory.GetCurrentDirectory())!.Parent!.Parent!.FullName;
             if (book!.ImageFileName != null)
             {
                 string OldImagePath = Path.Combine(solutionPath, "Library API", "Infrustructure", "Library.Data", "FileStorage", "BookImages", book.ImageFileName);

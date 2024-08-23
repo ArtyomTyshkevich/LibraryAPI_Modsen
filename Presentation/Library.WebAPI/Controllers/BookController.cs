@@ -17,12 +17,14 @@ namespace Library.WebAPI.Controllers
         private readonly LibraryDbContext _dbContext;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBookService _bookService;
-        public BookController(IMapper mapper, LibraryDbContext dbContext, IUnitOfWork unitOfWork, IBookService bookService)
+        private readonly IImageCacheService _imageCacheService;
+        public BookController(IMapper mapper, LibraryDbContext dbContext, IUnitOfWork unitOfWork, IBookService bookService,ImageCacheService imageCacheService)
         {
             _unitOfWork = unitOfWork;
             _dbContext = dbContext;
             _mapper = mapper;
             _bookService = bookService;
+            _imageCacheService = imageCacheService;
         }
 
         [HttpGet]
@@ -30,12 +32,9 @@ namespace Library.WebAPI.Controllers
         public async Task<IActionResult> GetBook(Guid id)
         {
             var book = await _unitOfWork.Books.Get(id);
-
-            if (book == null)
-            {
-                return NotFound(new { Message = "Book not found" });
-            }
-            return Ok(book);
+            var bookDTO = _mapper.Map<BookDTO>(book);
+            _imageCacheService.BookDTOCreate(bookDTO);
+            return Ok(bookDTO);
         }
 
         [HttpGet]
@@ -43,14 +42,16 @@ namespace Library.WebAPI.Controllers
         public async Task<IActionResult> GetBooks()
         {
             var books = await _unitOfWork.Books.Get();
-            return Ok(books);
+            List<BookDTO> booksDTO = _mapper.Map<List<BookDTO>>(books);
+            return Ok(booksDTO);
         }
         [HttpGet]
         [Route("GetBookWithPagination")]
         public async Task<IActionResult> GetBookWithPagination(int PageNum, int PageSize)
         {
             var books = await _bookService.BooksPagination(PageNum, PageSize);
-            return Ok(books);
+            List<BookDTO> booksDTO = _mapper.Map<List<BookDTO>>(books);
+            return Ok(booksDTO);
         }
 
         [HttpGet]
@@ -59,17 +60,13 @@ namespace Library.WebAPI.Controllers
         {
             var book = await _dbContext.Books
                                            .Include(b => b.Author)
-                                           .FirstOrDefaultAsync(a => a.ISBN == ISBN); ;
-            if (book == null)
-            {
-                return NotFound(new { Message = "Book not found" });
-            }
-            return Ok(book);
+                                           .FirstOrDefaultAsync(a => a.ISBN == ISBN);
+            var bookDTO = _mapper.Map<Book>(book);
+            return Ok(bookDTO);
         }
 
         [HttpPost]
         [Route("Create")]
-        [Authorize(Policy = "ModerAndHigher")]
         public async Task<IActionResult> CreateBook(Book book)
         {
             await _unitOfWork.Books.Create(book);
@@ -78,7 +75,6 @@ namespace Library.WebAPI.Controllers
 
         [HttpPatch]
         [Route("Update")]
-        [Authorize(Policy = "ModerAndHigher")]
         public async Task<IActionResult> UpdateBook(Book book)
         {
             await _unitOfWork.Books.Update(book);
@@ -87,21 +83,15 @@ namespace Library.WebAPI.Controllers
 
         [HttpDelete]
         [Route("Delete")]
-        [Authorize(Policy = "ModerAndHigher")]
         public async Task<IActionResult> DeleteBook(Guid Id)
         {
             Book? book = await _unitOfWork.Books.Get(Id);
-            if (book == null)
-            {
-                return NotFound(new { Message = "Book not found" });
-            }
-            await _unitOfWork.Books.Delete(book);
+            await _unitOfWork.Books.Delete(book!);
             return Ok("Successfully deleted");
         }
 
         [HttpPatch]
         [Route("IssueBookToUser")]
-        [Authorize(Policy = "UserOnly")]
         public async Task<IActionResult> IssueBookToUser(Guid bookId, long userId)
         {
             var user = await _dbContext.Users
@@ -126,7 +116,6 @@ namespace Library.WebAPI.Controllers
         }
         [HttpPatch]
         [Route("ChangeBookImage")]
-        [Authorize(Policy = "ModerAndHigher")]
         public async Task<IActionResult> ChangeBookImage([FromForm] BookDTO bookDTO)
         {
             await _bookService.AddImageToBook(bookDTO);
