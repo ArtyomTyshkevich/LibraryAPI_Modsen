@@ -16,15 +16,16 @@ using FluentValidation;
 using Library.Domain.DTOs;
 using Library.WebAPI.Middlewares;
 using Library.Application.Mappers;
+using MassTransit;
+using Library.Data.Consumers;
+using Library.Data.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllers();
-
-
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IImageCacheService, ImageCacheService>();
+builder.Services.AddScoped<ImageCacheService, ImageCacheService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IValidator<Massage>, MassageValidator>();
@@ -40,6 +41,30 @@ builder.Services.AddStackExchangeRedisCache(redisOption=>
     string conection = builder.Configuration
         .GetConnectionString("Redis")!;
     redisOption.Configuration = conection;
+});
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer<BookRentConsumer>();
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("rabbitmq://localhost", c =>
+        {
+            c.Username("guest");
+            c.Password("guest");
+        });
+
+        cfg.ReceiveEndpoint("NotifyTransactionsQueue", e =>
+        {
+            e.ConfigureConsumer<BookRentConsumer>(context);
+
+        });
+
+        cfg.ClearSerialization();
+        cfg.UseRawJsonSerializer();
+        cfg.ConfigureEndpoints(context);
+        cfg.UseFilter(new DelayMiddleware());
+    });
 });
 builder.Services.AddDbContext<LibraryDbContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -61,11 +86,31 @@ builder.Services.AddAuthentication(opt => {
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]!))
         };
     });
-builder.Services.AddAuthorization(options => options.DefaultPolicy =
-    new AuthorizationPolicyBuilder
-            (JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthorization(options =>
+{
+    options.DefaultPolicy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
         .RequireAuthenticatedUser()
-        .Build());
+        .Build();
+
+    options.AddPolicy("AdminOnly", policy =>
+    {
+        policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
+        policy.RequireAuthenticatedUser();
+        policy.RequireRole("Admin");
+    });
+    options.AddPolicy("ModerAndHigher", policy =>
+    {
+        policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
+        policy.RequireAuthenticatedUser();
+        policy.RequireRole("Moder", "Admin");
+    });
+    options.AddPolicy("UserPolicy", policy =>
+    {
+        policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
+        policy.RequireAuthenticatedUser();
+        policy.RequireRole("User");
+    });
+});
 
 builder.Services.AddIdentity<User, IdentityRole<long>>()
     .AddEntityFrameworkStores<LibraryDbContext>()

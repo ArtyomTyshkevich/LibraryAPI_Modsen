@@ -1,4 +1,5 @@
 ﻿using Library.Domain.DTOs;
+using Microsoft.AspNetCore.Http;
 public interface IImageCacheService
 {
     /// <summary>
@@ -14,5 +15,5 @@ public interface IImageCacheService
     /// <param name="imageFileName">Имя файла изображения.</param>
     /// <returns>Массив байтов изображения.</returns>
     Task<byte[]> LoadImageFromSourceAsync(string imageFileName);
-    Task BookDTOCreate(BookDTO bookDTO);
+    Task<IFormFile> BookDTOCreate(BookDTO bookDTO);
 }

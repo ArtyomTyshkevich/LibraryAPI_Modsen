@@ -1,11 +1,8 @@
 ﻿using AutoMapper;
-using Library.Data.Context;
 using Library.Domain.DTOs;
 using Library.Domain.Entities;
 using Library.Domain.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Library.WebAPI.Controllers
 {
@@ -14,27 +11,22 @@ namespace Library.WebAPI.Controllers
     public class BookController : Controller
     {
         private readonly IMapper _mapper;
-        private readonly LibraryDbContext _dbContext;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBookService _bookService;
-        private readonly IImageCacheService _imageCacheService;
-        public BookController(IMapper mapper, LibraryDbContext dbContext, IUnitOfWork unitOfWork, IBookService bookService,ImageCacheService imageCacheService)
+
+        public BookController(IMapper mapper, IUnitOfWork unitOfWork, IBookService bookService)
         {
             _unitOfWork = unitOfWork;
-            _dbContext = dbContext;
             _mapper = mapper;
             _bookService = bookService;
-            _imageCacheService = imageCacheService;
+            
         }
 
         [HttpGet]
         [Route("get/byId/{id}")]
         public async Task<IActionResult> GetBook(Guid id)
         {
-            var book = await _unitOfWork.Books.Get(id);
-            var bookDTO = _mapper.Map<BookDTO>(book);
-            _imageCacheService.BookDTOCreate(bookDTO);
-            return Ok(bookDTO);
+            return Ok(_bookService.BooksByIdRedis(id));
         }
 
         [HttpGet]
@@ -56,13 +48,9 @@ namespace Library.WebAPI.Controllers
 
         [HttpGet]
         [Route("get/byISBN/{ISBN}")]
-        public async Task<IActionResult> GetBooksByISBN(string ISBN)
-        {
-            var book = await _dbContext.Books
-                                           .Include(b => b.Author)
-                                           .FirstOrDefaultAsync(a => a.ISBN == ISBN);
-            var bookDTO = _mapper.Map<Book>(book);
-            return Ok(bookDTO);
+        public async Task<IActionResult> GetBookByISBNWithFile(string ISBN)
+        { 
+            return Ok(_bookService.BooksByISBNFileSystem(ISBN));
         }
 
         [HttpPost]
@@ -94,25 +82,13 @@ namespace Library.WebAPI.Controllers
         [Route("IssueBookToUser")]
         public async Task<IActionResult> IssueBookToUser(Guid bookId, long userId)
         {
-            var user = await _dbContext.Users
-                                 .Include(u => u.Books)
-                                 .FirstOrDefaultAsync(x => x.Id == userId);
-            var book = await _unitOfWork.Books.Get(bookId);
+            var book = _bookService.BookToUser(bookId, userId);
             if (book == null)
-            {
-                return NotFound("Book not found");
-            }
-            if (book.StartRentDateTime != null && book.EndRentDateTime == null)
             {
                 return BadRequest("The book has already been issued to another user");
             }
-            book.StartRentDateTime = DateTime.UtcNow;
-            book.EndRentDateTime = DateTime.UtcNow.AddDays(60);
-            user!.Books.Add(book);
+            return Ok(book);
 
-            await _dbContext.SaveChangesAsync();
-
-            return Ok("The book was issued successfully");
         }
         [HttpPatch]
         [Route("ChangeBookImage")]
@@ -120,6 +96,6 @@ namespace Library.WebAPI.Controllers
         {
             await _bookService.AddImageToBook(bookDTO);
             return Ok();
-        }
+        }      
     }
 }
