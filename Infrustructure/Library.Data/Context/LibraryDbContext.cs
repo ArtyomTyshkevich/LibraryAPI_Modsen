@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Library.Domain.Entities;
+using Library.Application.Configuration;
 
 namespace Library.Data.Context
 {

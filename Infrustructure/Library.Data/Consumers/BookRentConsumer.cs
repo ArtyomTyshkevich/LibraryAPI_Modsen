@@ -2,9 +2,7 @@
 using Library.Domain.Entities;
 using Library.Domain.Interfaces;
 using MassTransit;
-using MassTransit.Transports;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 namespace Library.Data.Consumers
 {

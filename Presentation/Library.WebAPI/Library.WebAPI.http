@@ -2,5 +2,3 @@
 
 GET {{Library.WebAPI_HostAddress}}/weatherforecast/
 Accept: application/json
-
-###

@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Library.Data", "Infrustruct
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Library.Application", "Cores\Library.Application\Library.Application.csproj", "{A6DCD4AF-4F75-49D0-8395-4831D66D22EC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Library.Tests", "..\Library.Tests\Library.Tests.csproj", "{E79751AA-1903-4477-A7B3-50AC269C1951}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Library.Tests", "Tests\Library.Tests\Library.Tests.csproj", "{E79751AA-1903-4477-A7B3-50AC269C1951}"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{375DB61F-FF6A-4E4A-9427-FC172C7E598A}"
 EndProject
