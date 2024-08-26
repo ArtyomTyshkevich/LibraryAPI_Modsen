@@ -1,8 +1,7 @@
-﻿using System;
+﻿
 using Microsoft.EntityFrameworkCore;
 using Library.Domain.Entities;
 using Library.Data.Context;
-using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 
 namespace Library.Tests.Common
 {

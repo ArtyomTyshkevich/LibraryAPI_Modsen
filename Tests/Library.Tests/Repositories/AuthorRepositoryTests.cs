@@ -2,9 +2,6 @@
 using Library.Domain.Entities;
 using Library.Tests.Common;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace Library.Tests.Repositories
 {

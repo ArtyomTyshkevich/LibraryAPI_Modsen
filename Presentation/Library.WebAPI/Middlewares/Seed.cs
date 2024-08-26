@@ -1,19 +1,21 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
-
-public static class Seed
+namespace Library.WebAPI.Middlewares
 {
-    public static async Task InitializeRoles(IServiceProvider serviceProvider)
+    public static class Seed
     {
-        using var scope = serviceProvider.CreateScope();
-        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<long>>>();
-        var roles = new[] { "Admin", "User", "Moder" };
-
-        foreach (var role in roles)
+        public static async Task InitializeRoles(IServiceProvider serviceProvider)
         {
-            if (!await roleManager.RoleExistsAsync(role))
+            using var scope = serviceProvider.CreateScope();
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<long>>>();
+            var roles = new[] { "Admin", "User", "Moder" };
+
+            foreach (var role in roles)
             {
-                await roleManager.CreateAsync(new IdentityRole<long>(role));
+                if (!await roleManager.RoleExistsAsync(role))
+                {
+                    await roleManager.CreateAsync(new IdentityRole<long>(role));
+                }
             }
         }
     }
