@@ -1,16 +1,22 @@
 ﻿using Library.Data.Context;
 using Library.Domain.Entities;
 using Library.Domain.Interfaces;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace Library.Data.Repositories
 {
     public class BookRepository : IRepository<Book>
     {
         private readonly LibraryDbContext _libraryDbContext;
-        public BookRepository(LibraryDbContext libraryDbContext)
+        private readonly IWebHostEnvironment _env;
+        private readonly IConfiguration _configuration;
+        public BookRepository(LibraryDbContext libraryDbContext, IWebHostEnvironment env, IConfiguration configuration)
         {
+            _env = env;
             _libraryDbContext = libraryDbContext;
+            _configuration = configuration;
         }
 
         public async Task Create(Book Book)
@@ -22,10 +28,9 @@ namespace Library.Data.Repositories
         public async Task Delete(Book book)
         {
             _libraryDbContext.Books.Remove(book);
-            string solutionPath = Directory.GetParent(Directory.GetCurrentDirectory())!.Parent!.Parent!.FullName;
             if (book!.ImageFileName != null)
             {
-                string OldImagePath = Path.Combine(solutionPath, "Library API", "Infrustructure", "Library.Data", "FileStorage", "BookImages", book.ImageFileName);
+                string OldImagePath = Path.Combine(_env.ContentRootPath, _configuration["ImageStorage:Path"]!, book.ImageFileName);
                 System.IO.File.Delete(OldImagePath);
             }
             await _libraryDbContext.SaveChangesAsync();

@@ -19,6 +19,7 @@ using Library.Application.Mappers;
 using MassTransit;
 using Library.Data.Consumers;
 using Library.Data.Services;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,7 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IImageCacheService, ImageCacheService>();
 builder.Services.AddScoped<ImageCacheService, ImageCacheService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IValidator<Massage>, MassageValidator>();
@@ -36,28 +38,23 @@ builder.Services.AddScoped<IValidator<UserDTO>, UserDTOValidator>();
 builder.Services.AddScoped<IValidator<BookDTO>, BookDTOValidator>();
 builder.Services.AddFluentValidationAutoValidation();
 
-builder.Services.AddStackExchangeRedisCache(redisOption=>
-{
-    string conection = builder.Configuration
-        .GetConnectionString("Redis")!;
-    redisOption.Configuration = conection;
-});
+builder.Services.AddStackExchangeRedisCache(option =>
+    option.Configuration = builder.Configuration.GetConnectionString("Cache"));
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<BookRentConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("rabbitmq://localhost", c =>
+        cfg.Host(builder.Configuration["RabbitMqSettings:Host"], c =>
         {
-            c.Username("guest");
-            c.Password("guest");
+            c.Username(builder.Configuration["RabbitMqSettings:Username"]!);
+            c.Password(builder.Configuration["RabbitMqSettings:Password"]!);
         });
 
-        cfg.ReceiveEndpoint("NotifyTransactionsQueue", e =>
+        cfg.ReceiveEndpoint(builder.Configuration["RabbitMqSettings:QueueName"]!, e =>
         {
             e.ConfigureConsumer<BookRentConsumer>(context);
-
         });
 
         cfg.ClearSerialization();

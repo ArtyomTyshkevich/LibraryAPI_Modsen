@@ -4,7 +4,7 @@
     <ProjectVersion>2.1</ProjectVersion>
     <DockerTargetOS>Linux</DockerTargetOS>
     <DockerPublishLocally>False</DockerPublishLocally>
-    <ProjectGuid>1d179cf7-d5c0-4ae1-b654-f713d67d5abf</ProjectGuid>
+    <ProjectGuid>375db61f-ff6a-4e4a-9427-fc172c7e598a</ProjectGuid>
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
     <DockerServiceUrl>{Scheme}://localhost:{ServicePort}/swagger</DockerServiceUrl>
     <DockerServiceName>library.webapi</DockerServiceName>

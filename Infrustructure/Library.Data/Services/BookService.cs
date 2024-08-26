@@ -4,6 +4,7 @@ using Library.Domain.DTOs;
 using Library.Domain.Entities;
 using Library.Domain.Interfaces;
 using MassTransit;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -18,9 +19,11 @@ namespace Library.Data.Services
         private readonly IImageCacheService _imageCacheService;
         private readonly IConfiguration _configuration;
         private readonly IPublishEndpoint _publishEndpoint;
+        private readonly IWebHostEnvironment _env;
 
-        public BookService( LibraryDbContext libraryDbContext, IMapper mapper, IUnitOfWork unitOfWork, IImageCacheService imageCacheService, IConfiguration configuration, IPublishEndpoint publishEndpoint)
+        public BookService(LibraryDbContext libraryDbContext, IMapper mapper, IUnitOfWork unitOfWork, IImageCacheService imageCacheService, IConfiguration configuration, IPublishEndpoint publishEndpoint, IWebHostEnvironment env)
         {
+            _env = env;
             _libraryDbContext = libraryDbContext;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
@@ -37,13 +40,12 @@ namespace Library.Data.Services
             {
                 return;
             }
-            string? solutionPath = Directory.GetParent(Directory.GetCurrentDirectory())!.Parent!.Parent!.FullName;
             if (book!.ImageFileName != null)
             {
-                string OldImagePath = Path.Combine(solutionPath, _configuration["ImageStorage:Path"]!, book.ImageFileName);
+                string OldImagePath = Path.Combine(_env.ContentRootPath, _configuration["ImageStorage:Path"]!, book.ImageFileName);
                 System.IO.File.Delete(OldImagePath);
             }
-            string uploadFolder = Path.Combine(solutionPath, _configuration["ImageStorage:Path"]!);
+            string uploadFolder = Path.Combine(_env.ContentRootPath, _configuration["ImageStorage:Path"]!);
             var fileName = Guid.NewGuid().ToString() + "_" + BookDTO.ImageFile.FileName;
             string filepath = Path.Combine(uploadFolder, fileName);
             using (var stream = System.IO.File.Create(filepath))
@@ -79,10 +81,10 @@ namespace Library.Data.Services
         }
         public async Task<List<Book>> BooksPagination(int pageNum, int pageSize)
         {
-           var books = await _libraryDbContext.Books         
-                                .Skip((pageNum - 1) * pageSize)
-                                .Take(pageSize)
-                                .ToListAsync();
+            var books = await _libraryDbContext.Books
+                                 .Skip((pageNum - 1) * pageSize)
+                                 .Take(pageSize)
+                                 .ToListAsync();
             return books;
         }
         public async Task<BookDTO> BooksByIdRedis(Guid id)
@@ -120,24 +122,23 @@ namespace Library.Data.Services
                                           .Include(b => b.Author)
                                           .FirstAsync(a => a.ISBN == ISBN);
             var bookDTO = _mapper.Map<BookDTO>(book);
-            var filePath = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory())!.Parent!.Parent!.FullName, _configuration["ImageStorage:Path"]!, book.ImageFileName);
-
-            if (System.IO.File.Exists(filePath))
+            if (bookDTO.ImageFileName != null)
             {
-                var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
-                var file = new FormFile(new MemoryStream(fileBytes), 0, fileBytes.Length, book.ImageFileName, book.ImageFileName)
+                var filePath = Path.Combine(_env.ContentRootPath, _configuration["ImageStorage:Path"]!, book.ImageFileName);
+
+                if (System.IO.File.Exists(filePath))
                 {
-                    Headers = new HeaderDictionary(),
-                    ContentType = "image/jpg"
-                };
-                bookDTO.ImageFile = file;
-            }
-            else
-            {
-                bookDTO.ImageFile = null;
+                    var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+                    var file = new FormFile(new MemoryStream(fileBytes), 0, fileBytes.Length, book.ImageFileName, book.ImageFileName)
+                    {
+                        Headers = new HeaderDictionary(),
+                        ContentType = "image/jpg"
+                    };
+                    bookDTO.ImageFile = file;
+                }
             }
 
-            return bookDTO;
+                return bookDTO;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Library.Domain.DTOs;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
@@ -10,12 +11,14 @@ namespace Library.Data.Services
         private readonly IDistributedCache _cache;
         private readonly string _imageFolderPath;
         private readonly IConfiguration _configuration;
+        private readonly IWebHostEnvironment _env;
 
-        public ImageCacheService(IConfiguration configuration, IDistributedCache cache)
+        public ImageCacheService(IConfiguration configuration, IDistributedCache cache, IWebHostEnvironment env)
         {
+            _env = env;
             _cache = cache;
             _configuration = configuration;
-            _imageFolderPath = _configuration.GetValue<string>("PathToImages");
+            _imageFolderPath = Path.Combine(_env.ContentRootPath, _configuration["ImageStorage:Path"]!);
         }
 
         public async Task<byte[]> GetImageAsync(string imageKey)

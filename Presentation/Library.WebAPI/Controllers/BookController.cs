@@ -26,7 +26,8 @@ namespace Library.WebAPI.Controllers
         [Route("get/byId/{id}")]
         public async Task<IActionResult> GetBook(Guid id)
         {
-            return Ok(_bookService.BooksByIdRedis(id));
+            BookDTO bookDTO = await _bookService.BooksByIdRedis(id);
+            return Ok(bookDTO);
         }
 
         [HttpGet]
@@ -49,8 +50,9 @@ namespace Library.WebAPI.Controllers
         [HttpGet]
         [Route("get/byISBN/{ISBN}")]
         public async Task<IActionResult> GetBookByISBNWithFile(string ISBN)
-        { 
-            return Ok(_bookService.BooksByISBNFileSystem(ISBN));
+        {
+            BookDTO bookDTO = await _bookService.BooksByISBNFileSystem(ISBN);
+            return Ok(bookDTO);
         }
 
         [HttpPost]
@@ -61,7 +63,7 @@ namespace Library.WebAPI.Controllers
             return Ok(book);
         }
 
-        [HttpPatch]
+        [HttpPut]
         [Route("Update")]
         public async Task<IActionResult> UpdateBook(Book book)
         {
@@ -82,7 +84,7 @@ namespace Library.WebAPI.Controllers
         [Route("IssueBookToUser")]
         public async Task<IActionResult> IssueBookToUser(Guid bookId, long userId)
         {
-            var book = _bookService.BookToUser(bookId, userId);
+            var book =await  _bookService.BookToUser(bookId, userId);
             if (book == null)
             {
                 return BadRequest("The book has already been issued to another user");

@@ -10,7 +10,10 @@ namespace Library.Data.Context
         public LibraryDbContext(DbContextOptions<LibraryDbContext> options)
             : base(options)
         {
-            Database.Migrate();
+            if (Database.IsRelational())
+            {
+                Database.Migrate();
+            }
         }
         public DbSet<User> Users { get; set; }
         public DbSet<Book> Books { get; set; }

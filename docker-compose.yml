@@ -1,5 +1,3 @@
-version: '3.4'
-
 networks:
   backend:
 
@@ -21,6 +19,8 @@ services:
     build:
       context: .
       dockerfile: Presentation/Library.WebAPI/Dockerfile
+    volumes:
+      - ./Infrustructure/Library.Data/FileStorage/BookImages:/app/Infrustructure/Library.Data/FileStorage/BookImages
     networks:
       - backend
     environment:
@@ -31,5 +31,27 @@ services:
       - ConnectionStrings__DefaultConnection=Server=librarydb;Database=LibraryDb;User Id=sa;Password=password@12345#;TrustServerCertificate=True;
     depends_on:
       - librarydb
+      - library-redis
+      - rabbitmq
     ports:
-      - "8002:8080"
+      - "8002:80"
+      - "8082:443"
+
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - backend
+  
+  library-redis:
+    image: "redis:latest"
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - backend

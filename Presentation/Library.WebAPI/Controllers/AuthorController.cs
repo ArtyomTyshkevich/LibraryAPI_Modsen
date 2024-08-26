@@ -62,7 +62,7 @@ namespace Library.WebAPI.Controllers
             await _unitOfWork.Authors.Create(author);
             return Ok(author);
         }
-        [HttpPatch]
+        [HttpPut]
         [Route("Update")]
 
         public async Task<IActionResult> UpdateAuthor(Author author)
