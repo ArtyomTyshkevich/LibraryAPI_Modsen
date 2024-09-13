@@ -1,6 +1,6 @@
-﻿using Library.Data.Context;
+﻿using Library.Application.Interfaces;
+using Library.Data.Context;
 using Library.Domain.Entities;
-using Library.Domain.Interfaces;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 

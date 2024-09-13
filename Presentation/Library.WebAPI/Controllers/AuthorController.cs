@@ -1,8 +1,7 @@
 ﻿using AutoMapper;
+using Library.Application.Interfaces;
 using Library.Data.Context;
 using Library.Domain.Entities;
-using Library.Domain.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 

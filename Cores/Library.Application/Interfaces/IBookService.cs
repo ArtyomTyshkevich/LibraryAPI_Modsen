@@ -1,7 +1,7 @@
-﻿using Library.Domain.DTOs;
+﻿using Library.Application.DTOs;
 using Library.Domain.Entities;
 
-namespace Library.Domain.Interfaces
+namespace Library.Application.Interfaces
 {
     public interface IBookService
     {

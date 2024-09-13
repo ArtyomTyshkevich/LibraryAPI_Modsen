@@ -1,8 +1,9 @@
 ﻿using FluentValidation;
-using Library.Domain.DTOs;
-using Library.Domain.Validators.ValidatorsHelpers;
+using Library.Application.DTOs;
+using Library.Application.Validators.ValidatorsHelpers;
 
-namespace Library.Domain.Validators
+
+namespace Library.Application.Validators
 {
     public class BookDTOValidator : AbstractValidator<BookDTO>
     {

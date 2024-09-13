@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Library.Domain.Extensions;
+using Library.Application.Interfaces;
 
 namespace Library.WebAPI.Controllers;
 

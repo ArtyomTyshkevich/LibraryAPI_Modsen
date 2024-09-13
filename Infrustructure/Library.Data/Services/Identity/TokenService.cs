@@ -3,6 +3,7 @@ using Library.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Library.Domain.Extensions;
 using Microsoft.Extensions.Configuration;
+using Library.Application.Interfaces;
 
 
 namespace Library.Domain.Services;

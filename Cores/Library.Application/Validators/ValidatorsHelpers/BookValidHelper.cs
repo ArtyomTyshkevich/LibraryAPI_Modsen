@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace Library.Domain.Validators.ValidatorsHelpers
+namespace Library.Application.Validators.ValidatorsHelpers
 {
     public static class BookValidHelper
     {

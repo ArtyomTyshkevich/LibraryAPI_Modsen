@@ -1,4 +1,4 @@
-﻿namespace Library.Domain.Interfaces
+﻿namespace Library.Application.Interfaces
 {
 
     public interface IRepository<T>

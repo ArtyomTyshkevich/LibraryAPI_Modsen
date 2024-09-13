@@ -1,4 +1,5 @@
-﻿using Library.Domain.DTOs;
+﻿using Library.Application.DTOs;
+using Library.Application.Interfaces;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
@@ -64,21 +65,15 @@ namespace Library.Data.Services
         {
             if (bookDTO.ImageFileName == null)
             {
-                return null; // Если имя файла не указано, возвращаем null
+                return null;
             }
-
-            // Получаем байты изображения асинхронно
             var imageBytes = await GetImageAsync(bookDTO.ImageFileName);
 
             if (imageBytes.Length == 0)
             {
-                return null; // Если изображение пустое, возвращаем null
+                return null;
             }
-
-            // Указываем тип содержимого (например, "image/jpeg")
-            var contentType = "image/jpg"; // Установите это значение в зависимости от типа изображения или определите его динамически
-
-            // Создаем объект FormFile с нужными параметрами
+            var contentType = "image/jpg";
             var formFile = new FormFile(
                 new MemoryStream(imageBytes),
                 0,
@@ -87,8 +82,8 @@ namespace Library.Data.Services
                 bookDTO.ImageFileName
             )
             {
-                Headers = new HeaderDictionary(), // Инициализируем заголовки
-                ContentType = contentType          // Устанавливаем тип содержимого
+                Headers = new HeaderDictionary(),
+                ContentType = contentType
             };
 
             return formFile;

@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
+using Library.Application.DTOs;
+using Library.Application.Interfaces;
 using Library.Data.Context;
-using Library.Domain.DTOs;
 using Library.Domain.Entities;
-using Library.Domain.Interfaces;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;

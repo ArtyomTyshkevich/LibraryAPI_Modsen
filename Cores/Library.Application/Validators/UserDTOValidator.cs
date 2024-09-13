@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
-using Library.Domain.DTOs;
+using Library.Application.DTOs;
 
-namespace Library.Domain.Validators
+namespace Library.Application.Validators
 {
     public class UserDTOValidator : AbstractValidator<UserDTO>
     {

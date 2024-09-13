@@ -1,7 +1,6 @@
 using Library.Data.Context;
 using Library.Data.Repositories.UnitOfWork;
 using Library.Domain.Entities;
-using Library.Domain.Interfaces;
 using Library.Domain.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -11,15 +10,12 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using FluentValidation.AspNetCore;
 using System.Text;
-using Library.Domain.Validators;
-using FluentValidation;
-using Library.Domain.DTOs;
 using Library.WebAPI.Middlewares;
 using Library.Application.Mappers;
 using MassTransit;
 using Library.Data.Consumers;
 using Library.Data.Services;
-using StackExchange.Redis;
+using Library.Application.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,12 +26,6 @@ builder.Services.AddScoped<ImageCacheService, ImageCacheService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IValidator<Massage>, MassageValidator>();
-builder.Services.AddScoped<IValidator<User>, UserValidator>();
-builder.Services.AddScoped<IValidator<Book>, BookValidator>();
-builder.Services.AddScoped<IValidator<Author>, AuthorValidator>();
-builder.Services.AddScoped<IValidator<UserDTO>, UserDTOValidator>();
-builder.Services.AddScoped<IValidator<BookDTO>, BookDTOValidator>();
 builder.Services.AddFluentValidationAutoValidation();
 
 builder.Services.AddStackExchangeRedisCache(option =>

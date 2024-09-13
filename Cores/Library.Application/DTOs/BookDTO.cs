@@ -1,7 +1,6 @@
-﻿using Library.Domain.Entities;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 
-namespace Library.Domain.DTOs
+namespace Library.Application.DTOs
 {
     public class BookDTO
     {

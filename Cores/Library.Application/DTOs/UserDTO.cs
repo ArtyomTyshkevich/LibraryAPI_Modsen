@@ -1,6 +1,6 @@
 ﻿using Library.Domain.Entities;
 
-namespace Library.Domain.DTOs
+namespace Library.Application.DTOs
 {
     public class UserDTO
     {
