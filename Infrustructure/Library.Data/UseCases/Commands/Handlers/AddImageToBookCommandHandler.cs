@@ -1,33 +1,32 @@
-﻿using AutoMapper;
-using Library.Application.DTOs;
-using Library.Application.Exceptions;
+﻿using Library.Application.Exceptions;
 using Library.Application.Interfaces;
 using Library.Domain.Entities;
-using MediatR;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-
+using Microsoft.AspNetCore.Http;
 
 namespace Library.Data.UseCases.Commands.Handlers
 {
+    using MediatR;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.Configuration;
+    using System;
+    using System.IO;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     public class AddImageToBookCommandHandler : IRequestHandler<AddImageToBookCommand>
     {
-        private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IImageCacheService _imageCacheService;
-        private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _env;
+        private readonly IConfiguration _configuration;
 
-        public AddImageToBookCommandHandler(IMapper mapper, IUnitOfWork unitOfWork, IImageCacheService imageCacheService, IConfiguration configuration, IWebHostEnvironment env)
+        public AddImageToBookCommandHandler(IUnitOfWork unitOfWork, IWebHostEnvironment env, IConfiguration configuration)
         {
-            _mapper = mapper;
             _unitOfWork = unitOfWork;
-            _imageCacheService = imageCacheService;
-            _configuration = configuration;
             _env = env;
+            _configuration = configuration;
         }
 
-        public async Task<Unit> Handle(AddImageToBookCommand request, CancellationToken cancellationToken)
+        public async Task Handle(AddImageToBookCommand request, CancellationToken cancellationToken)
         {
             var book = await _unitOfWork.Books.Get(request.BookDTO.Id, cancellationToken);
             if (book == null)
@@ -41,12 +40,10 @@ namespace Library.Data.UseCases.Commands.Handlers
             }
 
             await DeleteOldImageIfExists(book, cancellationToken);
-            var fileName = await SaveNewImage(request.BookDTO, cancellationToken);
+            var fileName = await SaveNewImage(request.BookDTO.ImageFile, cancellationToken);
 
             book.ImageFileName = fileName;
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            return Unit.Value;
         }
 
         private Task DeleteOldImageIfExists(Book book, CancellationToken cancellationToken)
@@ -62,15 +59,15 @@ namespace Library.Data.UseCases.Commands.Handlers
             return Task.CompletedTask;
         }
 
-        private async Task<string> SaveNewImage(BookDTO bookDTO, CancellationToken cancellationToken)
+        private async Task<string> SaveNewImage(IFormFile imageFile, CancellationToken cancellationToken)
         {
             string uploadFolder = Path.Combine(_env.ContentRootPath, _configuration["ImageStorage:Path"]!);
-            var fileName = Guid.NewGuid().ToString() + "_" + bookDTO.ImageFile!.FileName;
+            var fileName = Guid.NewGuid().ToString() + "_" + imageFile.FileName;
             string filepath = Path.Combine(uploadFolder, fileName);
 
             using (var stream = File.Create(filepath))
             {
-                await bookDTO.ImageFile.CopyToAsync(stream, cancellationToken);
+                await imageFile.CopyToAsync(stream, cancellationToken);
             }
             return fileName;
         }

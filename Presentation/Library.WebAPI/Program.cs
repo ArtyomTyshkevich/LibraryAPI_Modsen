@@ -3,19 +3,18 @@ using Library.Application.Interfaces;
 using Library.Application.Mappers;
 using Library.Application.Services;
 using Library.Data.Repositories.UnitOfWork;
-using Library.Data.Services;
 using Library.Domain.Services;
 using Library.Infrastructure.Setup;
 using Library.WebAPI.Middlewares;
+using MediatR;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
 builder.Services.AddScoped<IAccountService, AccountService>();
-builder.Services.AddScoped<IBookService, BookService>();
-builder.Services.AddScoped<IImageCacheService, ImageCacheService>();
-builder.Services.AddScoped<ImageCacheService, ImageCacheService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();

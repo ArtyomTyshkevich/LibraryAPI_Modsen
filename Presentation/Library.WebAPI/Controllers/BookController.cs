@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
 using Library.Application.DTOs;
 using Library.Application.Interfaces;
+using Library.Data.UseCases.Commands;
+using Library.Data.UseCases.Queries;
 using Library.Domain.Entities;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Library.WebAPI.Controllers
 {
@@ -15,21 +14,22 @@ namespace Library.WebAPI.Controllers
     public class BookController : Controller
     {
         private readonly IMapper _mapper;
+        private readonly IMediator _mediator;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IBookService _bookService;
 
-        public BookController(IMapper mapper, IUnitOfWork unitOfWork, IBookService bookService)
+        public BookController(IMapper mapper, IUnitOfWork unitOfWork, IMediator mediator)
         {
+            _mediator = mediator;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _bookService = bookService;
         }
 
         [HttpGet]
         [Route("get/byId/{id}")]
         public async Task<IActionResult> GetBook(Guid id, CancellationToken cancellationToken)
         {
-            BookDTO bookDTO = await _bookService.BooksByIdRedis(id, cancellationToken);
+            var query = new GetBookByIdQuery { BookId = id };
+            BookDTO bookDTO = await _mediator.Send(query, cancellationToken);
             return Ok(bookDTO);
         }
 
@@ -55,7 +55,8 @@ namespace Library.WebAPI.Controllers
         [Route("get/byISBN/{ISBN}")]
         public async Task<IActionResult> GetBookByISBNWithFile(string ISBN, CancellationToken cancellationToken)
         {
-            BookDTO bookDTO = await _bookService.BooksByISBNFileSystem(ISBN, cancellationToken);
+            var query = new GetBookByISBNQuery { ISBN = ISBN };
+            BookDTO bookDTO = await _mediator.Send(query, cancellationToken);
             return Ok(bookDTO);
         }
 
@@ -90,7 +91,8 @@ namespace Library.WebAPI.Controllers
         [Route("IssueBookToUser")]
         public async Task<IActionResult> IssueBookToUser(Guid bookId, long userId, CancellationToken cancellationToken)
         {
-            var book = await _bookService.BookToUser(bookId, userId, cancellationToken);
+            var command = new AddBookToUserCommand { BookId = bookId, UserId = userId };
+            await _mediator.Send(command, cancellationToken);
             return Ok("Book successfully added to user");
         }
 
@@ -98,7 +100,8 @@ namespace Library.WebAPI.Controllers
         [Route("ChangeBookImage")]
         public async Task<IActionResult> ChangeBookImage([FromForm] BookDTO bookDTO, CancellationToken cancellationToken)
         {
-            await _bookService.AddImageToBook(bookDTO, cancellationToken);
+            var command = new AddImageToBookCommand { BookDTO = bookDTO};
+            await _mediator.Send(command, cancellationToken);
             return Ok();
         }
     }

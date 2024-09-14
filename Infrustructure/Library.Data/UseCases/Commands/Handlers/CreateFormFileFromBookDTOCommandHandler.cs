@@ -1,28 +1,43 @@
-﻿using Library.Application.DTOs;
-using Library.Application.Interfaces;
-using Microsoft.AspNetCore.Hosting;
+﻿using Library.Data.UseCases.Commands;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Configuration;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace Library.Data.Services
+namespace Library.Application.Commands.Handlers
 {
-    public class ImageCacheService : IImageCacheService
+    public class CreateFormFileFromBookDTOCommandHandler : IRequestHandler<CreateFormFileFromBookDTOCommand, IFormFile?>
     {
         private readonly IDistributedCache _cache;
         private readonly string _imageFolderPath;
-        private readonly IConfiguration _configuration;
-        private readonly IWebHostEnvironment _env;
 
-        public ImageCacheService(IConfiguration configuration, IDistributedCache cache, IWebHostEnvironment env)
+        public CreateFormFileFromBookDTOCommandHandler(IDistributedCache cache, string imageFolderPath)
         {
-            _env = env;
             _cache = cache;
-            _configuration = configuration;
-            _imageFolderPath = Path.Combine(_env.ContentRootPath, _configuration["ImageStorage:Path"]!);
+            _imageFolderPath = imageFolderPath;
         }
 
-        public async Task<byte[]> GetImage(string imageKey, CancellationToken cancellationToken)
+        public async Task<IFormFile?> Handle(CreateFormFileFromBookDTOCommand request, CancellationToken cancellationToken)
+        {
+            var bookDTO = request.BookDTO;
+            if (bookDTO.ImageFileName == null)
+            {
+                return null;
+            }
+
+            var imageBytes = await GetImage(bookDTO.ImageFileName, cancellationToken);
+
+            if (imageBytes.Length == 0)
+            {
+                return null;
+            }
+
+            return CreateFormFile(bookDTO.ImageFileName, imageBytes);
+        }
+
+        private async Task<byte[]> GetImage(string imageKey, CancellationToken cancellationToken)
         {
             var imageBytes = await _cache.GetAsync(imageKey, cancellationToken);
             if (imageBytes != null)
@@ -38,7 +53,7 @@ namespace Library.Data.Services
 
         private async Task<byte[]> LoadImageFromSource(string imageFileName, CancellationToken cancellationToken)
         {
-            var filePath = GetFilePath(imageFileName);
+            var filePath = Path.Combine(_imageFolderPath, imageFileName);
 
             if (!File.Exists(filePath))
             {
@@ -46,11 +61,6 @@ namespace Library.Data.Services
             }
 
             return await ReadImageFile(filePath, cancellationToken);
-        }
-
-        private string GetFilePath(string imageFileName)
-        {
-            return Path.Combine(_imageFolderPath, imageFileName);
         }
 
         private async Task<byte[]> ReadImageFile(string filePath, CancellationToken cancellationToken)
@@ -67,23 +77,6 @@ namespace Library.Data.Services
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2)
             }, cancellationToken);
-        }
-
-        public async Task<IFormFile?> BookDTOCreateWithRedis(BookDTO bookDTO, CancellationToken cancellationToken)
-        {
-            if (bookDTO.ImageFileName == null)
-            {
-                return null;
-            }
-
-            var imageBytes = await GetImage(bookDTO.ImageFileName, cancellationToken);
-
-            if (imageBytes.Length == 0)
-            {
-                return null;
-            }
-
-            return CreateFormFile(bookDTO.ImageFileName, imageBytes);
         }
 
         private IFormFile CreateFormFile(string fileName, byte[] imageBytes)
