@@ -1,19 +1,19 @@
 ﻿using AutoMapper;
 using Library.Application.DTOs;
+using Library.Application.Exceptions;
 using Library.Application.Interfaces;
 using Library.Data.Context;
 using Library.Domain.Entities;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+
 
 namespace Library.Data.Services
 {
     public class BookService : IBookService
     {
-        private readonly LibraryDbContext _libraryDbContext;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IImageCacheService _imageCacheService;
@@ -24,121 +24,152 @@ namespace Library.Data.Services
         public BookService(LibraryDbContext libraryDbContext, IMapper mapper, IUnitOfWork unitOfWork, IImageCacheService imageCacheService, IConfiguration configuration, IPublishEndpoint publishEndpoint, IWebHostEnvironment env)
         {
             _env = env;
-            _libraryDbContext = libraryDbContext;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _imageCacheService = imageCacheService;
             _configuration = configuration;
-            _configuration = configuration;
             _publishEndpoint = publishEndpoint;
         }
 
-        public async Task AddImageToBook(BookDTO BookDTO)
+        public async Task AddImageToBook(BookDTO bookDTO, CancellationToken cancellationToken)
         {
-            Book? book = await _unitOfWork.Books.Get(BookDTO.Id);
-            if (BookDTO.ImageFile == null)
-            {
-                return;
-            }
-            if (book!.ImageFileName != null)
-            {
-                string OldImagePath = Path.Combine(_env.ContentRootPath, _configuration["ImageStorage:Path"]!, book.ImageFileName);
-                System.IO.File.Delete(OldImagePath);
-            }
-            string uploadFolder = Path.Combine(_env.ContentRootPath, _configuration["ImageStorage:Path"]!);
-            var fileName = Guid.NewGuid().ToString() + "_" + BookDTO.ImageFile.FileName;
-            string filepath = Path.Combine(uploadFolder, fileName);
-            using (var stream = System.IO.File.Create(filepath))
-            {
-                BookDTO.ImageFile.CopyTo(stream);
-            }
-            book.ImageFileName = fileName;
-            await _libraryDbContext.SaveChangesAsync();
-            return;
-        }
-        public async Task<string> AddBookToUser(Guid bookId, long userId)
-        {
-            var user = await _libraryDbContext.Users
-                                 .Include(u => u.Books)
-                                 .FirstOrDefaultAsync(x => x.Id == userId);
-            var book = await _unitOfWork.Books.Get(bookId);
+            var book = await _unitOfWork.Books.Get(bookDTO.Id, cancellationToken);
             if (book == null)
             {
-                return "Book not found";
+                throw new BookNotFoundException(bookDTO.Id); // Исключение, если книга не найдена
             }
+
+            if (bookDTO.ImageFile == null)
+            {
+                throw new ArgumentException("Image file is missing.");
+            }
+
+            await DeleteOldImageIfExists(book!, cancellationToken);
+            var fileName = await SaveNewImage(bookDTO, cancellationToken);
+
+            book.ImageFileName = fileName;
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+
+        private Task DeleteOldImageIfExists(Book book, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(book.ImageFileName)) return Task.CompletedTask;
+
+            string oldImagePath = Path.Combine(_env.ContentRootPath, _configuration["ImageStorage:Path"]!, book.ImageFileName!);
+            if (File.Exists(oldImagePath))
+            {
+                File.Delete(oldImagePath);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private async Task<string> SaveNewImage(BookDTO bookDTO, CancellationToken cancellationToken)
+        {
+            string uploadFolder = Path.Combine(_env.ContentRootPath, _configuration["ImageStorage:Path"]!);
+            var fileName = Guid.NewGuid().ToString() + "_" + bookDTO.ImageFile!.FileName;
+            string filepath = Path.Combine(uploadFolder, fileName);
+
+            using (var stream = File.Create(filepath))
+            {
+                await bookDTO.ImageFile.CopyToAsync(stream, cancellationToken);
+            }
+            return fileName;
+        }
+
+        public async Task<string> AddBookToUser(Guid bookId, long userId, CancellationToken cancellationToken)
+        {
+            var user = await _unitOfWork.Users.Get(userId, cancellationToken);
+            var book = await _unitOfWork.Books.Get(bookId, cancellationToken);
+
+            if (book == null)
+            {
+                throw new BookNotFoundException(bookId); // Исключение, если книга не найдена
+            }
+
             if (book.StartRentDateTime != null && book.EndRentDateTime == null)
             {
-                return "The book has already been issued to another user";
+                throw new BookAlreadyRentedException(bookId); // Исключение, если книга уже выдана
             }
+
             book.StartRentDateTime = DateTime.UtcNow;
             book.EndRentDateTime = DateTime.UtcNow.AddDays(60);
             user!.Books.Add(book);
-
-            await _libraryDbContext.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return "The book was issued successfully";
+        }
 
-        }
-        public async Task<List<Book>> BooksPagination(int pageNum, int pageSize)
+        public async Task<BookDTO> BooksByIdRedis(Guid id, CancellationToken cancellationToken)
         {
-            var books = await _libraryDbContext.Books
-                                 .Skip((pageNum - 1) * pageSize)
-                                 .Take(pageSize)
-                                 .ToListAsync();
-            return books;
-        }
-        public async Task<BookDTO> BooksByIdRedis(Guid id)
-        {
-            var book = await _unitOfWork.Books.Get(id);
+            var book = await _unitOfWork.Books.Get(id, cancellationToken);
+            if (book == null)
+            {
+                throw new BookNotFoundException(id); // Исключение, если книга не найдена
+            }
+
             var bookDTO = _mapper.Map<BookDTO>(book);
-            var formFile = await _imageCacheService.BookDTOCreate(bookDTO);
+            var formFile = await _imageCacheService.BookDTOCreateWithRedis(bookDTO, cancellationToken);
             bookDTO.ImageFile = formFile;
             return bookDTO;
         }
-        public async Task<Book?> BookToUser(Guid bookId, long userId)
-        {
-            var user = await _libraryDbContext.Users
-                      .Include(u => u.Books)
-                      .FirstOrDefaultAsync(x => x.Id == userId);
-            var book = await _unitOfWork.Books.Get(bookId);
 
-            if (book!.StartRentDateTime != null && book.EndRentDateTime == null)
+        public async Task<Book?> BookToUser(Guid bookId, long userId, CancellationToken cancellationToken)
+        {
+            var user = await _unitOfWork.Users.Get(userId, cancellationToken);
+            var book = await _unitOfWork.Books.Get(bookId, cancellationToken);
+
+            if (book == null)
             {
-                return null;
+                throw new BookNotFoundException(bookId); // Исключение, если книга не найдена
             }
+
+            if (book.StartRentDateTime != null && book.EndRentDateTime == null)
+            {
+                throw new BookAlreadyRentedException(bookId); // Исключение, если книга уже выдана
+            }
+
             book.StartRentDateTime = DateTime.UtcNow;
             book.EndRentDateTime = DateTime.UtcNow.AddDays(60);
-
             user!.Books.Add(book);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _publishEndpoint.Publish(book);
-
-            await _libraryDbContext.SaveChangesAsync();
 
             return book;
         }
-        public async Task<BookDTO> BooksByISBNFileSystem(string ISBN)
-        {
-            var book = await _libraryDbContext.Books
-                                          .Include(b => b.Author)
-                                          .FirstAsync(a => a.ISBN == ISBN);
-            var bookDTO = _mapper.Map<BookDTO>(book);
-            if (bookDTO.ImageFileName != null)
-            {
-                var filePath = Path.Combine(_env.ContentRootPath, _configuration["ImageStorage:Path"]!, book.ImageFileName);
 
-                if (System.IO.File.Exists(filePath))
-                {
-                    var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
-                    var file = new FormFile(new MemoryStream(fileBytes), 0, fileBytes.Length, book.ImageFileName, book.ImageFileName)
-                    {
-                        Headers = new HeaderDictionary(),
-                        ContentType = "image/jpg"
-                    };
-                    bookDTO.ImageFile = file;
-                }
+        public async Task<BookDTO> BooksByISBNFileSystem(string ISBN, CancellationToken cancellationToken)
+        {
+            var book = await _unitOfWork.Books.GetByISBN(ISBN, cancellationToken);
+            if (book == null)
+            {
+                throw new BookNotFoundException(new Guid());
             }
 
-                return bookDTO;
+            var bookDTO = _mapper.Map<BookDTO>(book);
+
+            if (bookDTO.ImageFileName != null)
+            {
+                bookDTO.ImageFile = await GetImageFileFromPath(book.ImageFileName!, cancellationToken);
+            }
+
+            return bookDTO;
+        }
+
+        private async Task<IFormFile?> GetImageFileFromPath(string fileName, CancellationToken cancellationToken)
+        {
+            var filePath = Path.Combine(_env.ContentRootPath, _configuration["ImageStorage:Path"]!, fileName);
+            if (File.Exists(filePath))
+            {
+                var fileBytes = await File.ReadAllBytesAsync(filePath, cancellationToken);
+                return new FormFile(new MemoryStream(fileBytes), 0, fileBytes.Length, fileName, fileName)
+                {
+                    Headers = new HeaderDictionary(),
+                    ContentType = "image/jpg"
+                };
+            }
+
+            return null;
         }
     }
 }

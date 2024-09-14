@@ -22,71 +22,84 @@ namespace Library.Data.Services
             _imageFolderPath = Path.Combine(_env.ContentRootPath, _configuration["ImageStorage:Path"]!);
         }
 
-        public async Task<byte[]> GetImageAsync(string imageKey)
+        public async Task<byte[]> GetImage(string imageKey, CancellationToken cancellationToken)
         {
-            var imageBytes = await _cache.GetAsync(imageKey);
+            var imageBytes = await _cache.GetAsync(imageKey, cancellationToken);
             if (imageBytes != null)
             {
                 return imageBytes;
             }
 
-            imageBytes = await LoadImageFromSourceAsync(imageKey);
-
-            await _cache.SetAsync(imageKey, imageBytes, new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2)
-            });
+            imageBytes = await LoadImageFromSource(imageKey, cancellationToken);
+            await CacheImageAsync(imageKey, imageBytes, cancellationToken);
 
             return imageBytes;
         }
 
-        public async Task<byte[]> LoadImageFromSourceAsync(string imageFileName)
+        private async Task<byte[]> LoadImageFromSource(string imageFileName, CancellationToken cancellationToken)
         {
-            var filePath = Path.Combine(_imageFolderPath, imageFileName);
+            var filePath = GetFilePath(imageFileName);
 
-            if (!System.IO.File.Exists(filePath))
+            if (!File.Exists(filePath))
             {
                 return new byte[0];
             }
 
-            byte[] imageBytes;
-            using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-            {
-                using (var memoryStream = new MemoryStream())
-                {
-                    await fileStream.CopyToAsync(memoryStream);
-                    imageBytes = memoryStream.ToArray();
-                }
-            }
-
-            return imageBytes;
+            return await ReadImageFile(filePath, cancellationToken);
         }
-        public async Task<IFormFile?> BookDTOCreate(BookDTO bookDTO)
+
+        private string GetFilePath(string imageFileName)
+        {
+            return Path.Combine(_imageFolderPath, imageFileName);
+        }
+
+        private async Task<byte[]> ReadImageFile(string filePath, CancellationToken cancellationToken)
+        {
+            using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            using var memoryStream = new MemoryStream();
+            await fileStream.CopyToAsync(memoryStream, cancellationToken);
+            return memoryStream.ToArray();
+        }
+
+        private async Task CacheImageAsync(string imageKey, byte[] imageBytes, CancellationToken cancellationToken)
+        {
+            await _cache.SetAsync(imageKey, imageBytes, new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2)
+            }, cancellationToken);
+        }
+
+        public async Task<IFormFile?> BookDTOCreateWithRedis(BookDTO bookDTO, CancellationToken cancellationToken)
         {
             if (bookDTO.ImageFileName == null)
             {
                 return null;
             }
-            var imageBytes = await GetImageAsync(bookDTO.ImageFileName);
+
+            var imageBytes = await GetImage(bookDTO.ImageFileName, cancellationToken);
 
             if (imageBytes.Length == 0)
             {
                 return null;
             }
+
+            return CreateFormFile(bookDTO.ImageFileName, imageBytes);
+        }
+
+        private IFormFile CreateFormFile(string fileName, byte[] imageBytes)
+        {
             var contentType = "image/jpg";
-            var formFile = new FormFile(
+            return new FormFile(
                 new MemoryStream(imageBytes),
                 0,
                 imageBytes.Length,
-                bookDTO.ImageFileName,
-                bookDTO.ImageFileName
+                fileName,
+                fileName
             )
             {
                 Headers = new HeaderDictionary(),
                 ContentType = contentType
             };
-
-            return formFile;
         }
-    } 
+    }
 }

@@ -4,8 +4,9 @@ namespace Library.Application.Interfaces
 {
     public interface IUnitOfWork : IDisposable
     {
-        IRepository<Author> Authors { get; }
-        IRepository<Book> Books { get; }
-        Task<int> SaveChangesAsync();
+        IRepository<User, long> Users { get; }
+        IRepository<Author, Guid> Authors { get; }
+        IBookRepository<Book> Books { get; }
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Library.Application.DTOs;
 using Microsoft.AspNetCore.Http;
 
+
 namespace Library.Application.Interfaces
 {
     public interface IImageCacheService
@@ -10,14 +11,9 @@ namespace Library.Application.Interfaces
         /// </summary>
         /// <param name="imageKey">Ключ изображения для кэша.</param>
         /// <returns>Массив байтов изображения.</returns>
-        Task<byte[]> GetImageAsync(string imageKey);
+        Task<byte[]> GetImage(string imageKey, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Загружает изображение из источника (файловой системы).
-        /// </summary>
-        /// <param name="imageFileName">Имя файла изображения.</param>
-        /// <returns>Массив байтов изображения.</returns>
-        Task<byte[]> LoadImageFromSourceAsync(string imageFileName);
-        Task<IFormFile> BookDTOCreate(BookDTO bookDTO);
+
+        Task<IFormFile> BookDTOCreateWithRedis(BookDTO bookDTO, CancellationToken cancellationToken = default);
     }
 }
