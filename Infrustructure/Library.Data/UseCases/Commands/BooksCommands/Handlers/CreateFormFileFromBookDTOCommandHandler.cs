@@ -1,22 +1,25 @@
-﻿using Library.Data.UseCases.Commands;
+﻿using Library.Data.UseCases.Commands.BooksCommands;
 using MediatR;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
-namespace Library.Application.Commands.Handlers
+namespace Library.Data.UseCases.Commands.BooksCommands.Handlers
 {
     public class CreateFormFileFromBookDTOCommandHandler : IRequestHandler<CreateFormFileFromBookDTOCommand, IFormFile?>
     {
         private readonly IDistributedCache _cache;
         private readonly string _imageFolderPath;
+        private readonly IConfiguration _configuration;
+        private readonly IWebHostEnvironment _env;
 
-        public CreateFormFileFromBookDTOCommandHandler(IDistributedCache cache, string imageFolderPath)
+        public CreateFormFileFromBookDTOCommandHandler(IConfiguration configuration, IDistributedCache cache, IWebHostEnvironment env)
         {
+            _env = env;
             _cache = cache;
-            _imageFolderPath = imageFolderPath;
+            _configuration = configuration;
+            _imageFolderPath = Path.Combine(_env.ContentRootPath, _configuration["ImageStorage:Path"]!);
         }
 
         public async Task<IFormFile?> Handle(CreateFormFileFromBookDTOCommand request, CancellationToken cancellationToken)

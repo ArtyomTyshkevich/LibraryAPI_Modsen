@@ -1,11 +1,13 @@
 ﻿using Library.Application.Interfaces;
 using Library.Data.Context;
 using Library.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Threading;
 
 namespace Library.Data.Repositories
 {
-    public class UserRepository : IRepository<User, long>
+    public class UserRepository : IUserRepository<User>
     {
         private readonly LibraryDbContext _libraryDbContext;
 
@@ -39,6 +41,26 @@ namespace Library.Data.Repositories
                                  .Include(u => u.Books)
                                  .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
         }
+        public async Task<List<long>> GetRolesId(User user, CancellationToken cancellationToken)
+        {
+            var roleIds = await _libraryDbContext.UserRoles
+                .Where(ur => ur.UserId == user.Id)
+                .Select(ur => ur.RoleId)
+                .ToListAsync(cancellationToken);
+
+            return roleIds;
+        }
+
+        public async Task<List<IdentityRole<long>>> GetRoles(User entity, CancellationToken cancellationToken)
+        {
+            var roleIds = await GetRolesId(entity, cancellationToken);
+
+            var roles = await _libraryDbContext.Roles
+                .Where(role => roleIds.Contains(role.Id))
+                .ToListAsync(cancellationToken);
+
+            return roles;
+        }
 
         public async Task<List<User>> GetWithPagination(int pageNum, int pageSize, CancellationToken cancellationToken)
         {
@@ -52,6 +74,12 @@ namespace Library.Data.Repositories
         {
             _libraryDbContext.Users.Update(user);
             await _libraryDbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<User> GetByMail(string mail, CancellationToken cancellationToken)
+        {
+            return await _libraryDbContext.Users
+                .FirstAsync(u => u.Email == mail, cancellationToken);
         }
     }
 }

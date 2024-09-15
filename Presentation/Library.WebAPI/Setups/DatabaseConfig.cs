@@ -1,7 +1,7 @@
 ﻿using Library.Data.Context;
 using Microsoft.EntityFrameworkCore;
 
-namespace Library.Infrastructure.Setup
+namespace Library.WebAPI.Setups
 {
     public static class DatabaseSetup
     {

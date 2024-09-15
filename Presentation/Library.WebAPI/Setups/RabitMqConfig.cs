@@ -1,10 +1,8 @@
 ﻿using Library.Data.Consumers;
 using Library.WebAPI.Middlewares;
 using MassTransit;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace Library.Infrastructure.Setup
+namespace Library.WebAPI.Setups
 {
     public static class RabbitMqSetup
     {

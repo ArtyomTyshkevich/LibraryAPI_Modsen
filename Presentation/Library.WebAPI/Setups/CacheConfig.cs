@@ -1,7 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace Library.Infrastructure.Setup
+﻿
+namespace Library.WebAPI.Setups
 {
     public static class CacheSetup
     {

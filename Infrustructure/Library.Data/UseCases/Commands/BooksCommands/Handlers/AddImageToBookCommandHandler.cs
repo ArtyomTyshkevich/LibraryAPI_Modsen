@@ -2,18 +2,14 @@
 using Library.Application.Interfaces;
 using Library.Domain.Entities;
 using Microsoft.AspNetCore.Http;
+using MediatR;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Library.Data.UseCases.Commands.BooksCommands;
 
-namespace Library.Data.UseCases.Commands.Handlers
+namespace Library.Data.UseCases.Commands.BooksCommands.Handlers
 {
-    using MediatR;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Configuration;
-    using System;
-    using System.IO;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    public class AddImageToBookCommandHandler : IRequestHandler<AddImageToBookCommand>
+    public class AddImageToBookCommandHandler : IRequestHandler<AddImageToBookCommand, Unit>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IWebHostEnvironment _env;
@@ -26,7 +22,7 @@ namespace Library.Data.UseCases.Commands.Handlers
             _configuration = configuration;
         }
 
-        public async Task Handle(AddImageToBookCommand request, CancellationToken cancellationToken)
+        public async Task<Unit> Handle(AddImageToBookCommand request, CancellationToken cancellationToken)
         {
             var book = await _unitOfWork.Books.Get(request.BookDTO.Id, cancellationToken);
             if (book == null)
@@ -44,6 +40,8 @@ namespace Library.Data.UseCases.Commands.Handlers
 
             book.ImageFileName = fileName;
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            return Unit.Value; // Ensure you return Unit.Value
         }
 
         private Task DeleteOldImageIfExists(Book book, CancellationToken cancellationToken)
@@ -72,5 +70,4 @@ namespace Library.Data.UseCases.Commands.Handlers
             return fileName;
         }
     }
-
 }

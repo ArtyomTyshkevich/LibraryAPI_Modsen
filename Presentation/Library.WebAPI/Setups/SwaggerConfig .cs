@@ -1,6 +1,6 @@
 ﻿using Microsoft.OpenApi.Models;
 
-namespace Library.Infrastructure.Setup
+namespace Library.WebAPI.Setups
 {
     public static class SwaggerSetup
     {

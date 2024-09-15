@@ -1,5 +1,10 @@
-using Library.Application.Interfaces;
+using Library.Application.DTOs;
+using Library.Data.UseCases.Commands;
+using Library.Data.UseCases.Commands.Identity;
+using Library.Data.UseCases.Queries.Identity;
+using Library.Data.UseCases.Queries.Identity.Handlers;
 using Library.Domain.Entities.Identity;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,31 +14,33 @@ namespace Library.WebAPI.Controllers
     [Route("accounts")]
     public class AccountsController : ControllerBase
     {
-        private readonly IAccountService _accountService;
+        private readonly IMediator _mediator;
 
-        public AccountsController(IAccountService accountService)
+        public AccountsController(IMediator mediator)
         {
-            _accountService = accountService;
+            _mediator = mediator;
         }
 
         [HttpPost("login")]
         public async Task<ActionResult<AuthResponse>> Authenticate([FromBody] AuthRequest request, CancellationToken cancellationToken)
         {
-            var response = await _accountService.Authenticate(request, cancellationToken);
+            var query = new AuthenticateQuery { AuthRequest = request };
+            var response = await _mediator.Send(query, cancellationToken);
             return Ok(response);
         }
-
         [HttpPost("register")]
         public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken)
         {
-            var response = await _accountService.Register(request, cancellationToken);
+            var query = new RegisterCommand { RegisterRequest = request };
+            var response = await _mediator.Send(query, cancellationToken);
             return Ok(response);
         }
 
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken([FromBody] TokenModel tokenModel, CancellationToken cancellationToken)
         {
-            var newTokens = await _accountService.RefreshToken(tokenModel, cancellationToken);
+            var query = new RefreshTokenCommand { tokenModel = tokenModel};
+            var newTokens = await _mediator.Send(query, cancellationToken);
             return Ok(newTokens);
         }
 
@@ -41,7 +48,8 @@ namespace Library.WebAPI.Controllers
         [HttpPost("revoke/{username}")]
         public async Task<IActionResult> Revoke(string username, CancellationToken cancellationToken)
         {
-            await _accountService.Revoke(username, cancellationToken);
+            var query = new RevokeTokenCommand { Username = username};
+            await _mediator.Send(query, cancellationToken);
             return Ok();
         }
 
@@ -49,7 +57,8 @@ namespace Library.WebAPI.Controllers
         [Authorize]
         public async Task<IActionResult> RevokeAll(CancellationToken cancellationToken)
         {
-            await _accountService.RevokeAll(cancellationToken);
+            var query = new RevokeAllTokensCommand { };
+            await _mediator.Send(query, cancellationToken);
             return Ok();
         }
     }

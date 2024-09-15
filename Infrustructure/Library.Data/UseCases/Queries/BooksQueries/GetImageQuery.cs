@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace Library.Data.UseCases.Queries
+namespace Library.Data.UseCases.Queries.BooksQueries
 {
     public class GetImageQuery : IRequest<byte[]>
     {

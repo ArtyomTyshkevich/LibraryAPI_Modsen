@@ -2,9 +2,9 @@
 using MediatR;
 using Microsoft.AspNetCore.Http;
 
-namespace Library.Data.UseCases.Commands
+namespace Library.Data.UseCases.Commands.BooksCommands
 {
-    public class AddImageToBookCommand : IRequest
+    public class CreateFormFileFromBookDTOCommand : IRequest<IFormFile?>
     {
         public BookDTO BookDTO { get; set; }
     }

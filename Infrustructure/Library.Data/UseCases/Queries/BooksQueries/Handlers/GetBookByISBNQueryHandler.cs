@@ -6,9 +6,9 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Hosting;
-using Library.Data.UseCases.Commands;
+using Library.Data.UseCases.Queries.BooksQueries;
 
-namespace Library.Data.UseCases.Queries.Handlers
+namespace Library.Data.UseCases.Queries.BooksQueries.Handlers
 {
     public class GetBookByISBNQueryHandler : IRequestHandler<GetBookByISBNQuery, BookDTO>
     {

@@ -1,17 +1,24 @@
-﻿using MediatR;
+﻿using Library.Data.UseCases.Queries.BooksQueries;
+using MediatR;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Configuration;
 
-namespace Library.Data.UseCases.Queries.Handlers
+namespace Library.Data.UseCases.Queries.BooksQueries.Handlers
 {
     public class GetImageQueryHandler : IRequestHandler<GetImageQuery, byte[]>
     {
         private readonly IDistributedCache _cache;
         private readonly string _imageFolderPath;
+        private readonly IConfiguration _configuration;
+        private readonly IWebHostEnvironment _env;
 
-        public GetImageQueryHandler(IDistributedCache cache, string imageFolderPath)
+        public GetImageQueryHandler(IConfiguration configuration, IDistributedCache cache, IWebHostEnvironment env)
         {
+            _env = env;
             _cache = cache;
-            _imageFolderPath = imageFolderPath;
+            _configuration = configuration;
+            _imageFolderPath = Path.Combine(_env.ContentRootPath, _configuration["ImageStorage:Path"]!);
         }
 
         public async Task<byte[]> Handle(GetImageQuery request, CancellationToken cancellationToken)

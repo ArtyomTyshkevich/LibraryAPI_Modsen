@@ -2,11 +2,11 @@
 using Library.Application.DTOs;
 using Library.Application.Exceptions;
 using Library.Application.Interfaces;
-using Library.Data.UseCases.Commands;
+using Library.Data.UseCases.Commands.BooksCommands;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 
-namespace Library.Data.UseCases.Queries.Handlers
+namespace Library.Data.UseCases.Queries.BooksQueries.Handlers
 {
     public class GetBookByIdQueryHandler : IRequestHandler<GetBookByIdQuery, BookDTO>
     {
@@ -14,7 +14,7 @@ namespace Library.Data.UseCases.Queries.Handlers
         private readonly IMapper _mapper;
         private readonly IMediator _mediator;
 
-        public GetBookByIdQueryHandler(IUnitOfWork unitOfWork, IMapper mapper, IImageCacheService imageCacheService, IMediator mediator)
+        public GetBookByIdQueryHandler(IUnitOfWork unitOfWork, IMapper mapper, IMediator mediator)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;

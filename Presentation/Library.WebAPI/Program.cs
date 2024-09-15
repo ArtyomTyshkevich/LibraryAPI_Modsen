@@ -1,11 +1,9 @@
 using FluentValidation.AspNetCore;
 using Library.Application.Interfaces;
 using Library.Application.Mappers;
-using Library.Application.Services;
 using Library.Data.Repositories.UnitOfWork;
-using Library.Domain.Services;
-using Library.Infrastructure.Setup;
 using Library.WebAPI.Middlewares;
+using Library.WebAPI.Setups;
 using MediatR;
 using System.Reflection;
 
@@ -13,9 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
-builder.Services.AddScoped<IAccountService, AccountService>();
-builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddMediatR(Assembly.Load("Library.Data"));
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddFluentValidationAutoValidation();

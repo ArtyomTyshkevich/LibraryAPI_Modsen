@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Library.Domain.Entities;
-using Library.Data.Context;
 using Microsoft.AspNetCore.Identity;
+using Library.Data.Context;
 
-namespace Library.Infrastructure.Setup
+namespace Library.WebAPI.Setups
 {
     public static class AuthenticationSetup
     {

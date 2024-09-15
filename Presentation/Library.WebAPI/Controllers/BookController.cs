@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Library.Application.DTOs;
 using Library.Application.Interfaces;
-using Library.Data.UseCases.Commands;
-using Library.Data.UseCases.Queries;
+using Library.Data.UseCases.Commands.BooksCommands;
+using Library.Data.UseCases.Queries.BooksQueries;
 using Library.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

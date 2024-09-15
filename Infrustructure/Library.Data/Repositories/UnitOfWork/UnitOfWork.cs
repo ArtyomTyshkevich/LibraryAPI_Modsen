@@ -22,7 +22,7 @@ namespace Library.Data.Repositories.UnitOfWork
             Users = new UserRepository(_libraryDbContext);
         }
 
-        public IRepository<User, long> Users { get; private set; }
+        public IUserRepository<User> Users { get; private set; }
         public IRepository<Author, Guid> Authors { get; private set; }
         public IBookRepository<Book> Books { get; private set; }
 
