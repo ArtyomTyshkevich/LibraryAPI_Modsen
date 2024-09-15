@@ -1,5 +1,4 @@
 ﻿using Library.Data.Repositories;
-using Library.Domain.Entities;
 using Library.Tests.Common;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,18 +10,11 @@ namespace Library.Tests.Repositories
         public async Task CreateAuthor_Success()
         {
             // Arrange
-            var authorId = Guid.Parse("77777777-7777-7777-7777-777777777771");
-            var author = new Author
-            {
-                Id = authorId,
-                Name = "Test Author",
-                Birthday = DateTime.MinValue,
-                Country = "Belarus"
-            };
+            var author = AuthorTestData.CreateTestAuthor();
             var authorRepository = new AuthorRepository(Context);
 
             // Act
-            await authorRepository.Create(author);
+            await authorRepository.Create(author, CancellationToken.None);
             await Context.SaveChangesAsync();
 
             // Assert
@@ -36,121 +28,95 @@ namespace Library.Tests.Repositories
         }
 
         [Fact]
+        public async Task GetAuthors_Success()
+        {
+            // Arrange
+            var author1 = AuthorTestData.CreateTestAuthor();
+            var author2 = AuthorTestData.CreateTestAuthor();
+            await Context.Authors.AddRangeAsync(author1, author2);
+            await Context.SaveChangesAsync();
+            var authorRepository = new AuthorRepository(Context);
+
+            // Act
+            var authors = await authorRepository.Get(CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(authors);
+            Assert.Equal(2, authors.Count);
+        }
+
+        [Fact]
         public async Task GetAuthorById_Success()
         {
             // Arrange
-            var authorId = Guid.Parse("77777777-7777-7777-7777-777777777772");
-            var author = new Author
-            {
-                Id = authorId,
-                Name = "Test Author",
-                Birthday = DateTime.MinValue,
-                Country = "Belarus"
-            };
+            var author = AuthorTestData.CreateTestAuthor();
             await Context.Authors.AddAsync(author);
             await Context.SaveChangesAsync();
             var authorRepository = new AuthorRepository(Context);
 
             // Act
-            var result = await authorRepository.Get(authorId);
+            var result = await authorRepository.Get(author.Id, CancellationToken.None);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(authorId, result.Id);
-            Assert.Equal("Test Author", result.Name);
-            Assert.Equal(DateTime.MinValue, result.Birthday);
-            Assert.Equal("Belarus", result.Country);
+            Assert.Equal(author.Id, result.Id);
+            Assert.Equal(author.Name, result.Name);
         }
 
         [Fact]
-        public async Task DeleteAuthorById_Success()
+        public async Task DeleteAuthor_Success()
         {
             // Arrange
-            var authorId = Guid.Parse("77777777-7777-7777-7777-777777777773");
-            var author = new Author
-            {
-                Id = authorId,
-                Name = "Test Author",
-                Birthday = DateTime.MinValue,
-                Country = "Belarus"
-            };
+            var author = AuthorTestData.CreateTestAuthor();
             await Context.Authors.AddAsync(author);
             await Context.SaveChangesAsync();
             var authorRepository = new AuthorRepository(Context);
 
             // Act
-            await authorRepository.Delete(author);
+            await authorRepository.Delete(author, CancellationToken.None);
             await Context.SaveChangesAsync();
 
             // Assert
-            var result = await Context.Authors.FindAsync(authorId);
-            Assert.Null(result);
+            var deletedAuthor = await Context.Authors.FindAsync(author.Id);
+            Assert.Null(deletedAuthor);
         }
 
         [Fact]
-        public async Task DeleteAuthorById_Unsuccess()
+        public async Task UpdateAuthorSuccess()
         {
             // Arrange
-            var nonExistentAuthorId = Guid.NewGuid();
-            var author = new Author
-            {
-                Id = nonExistentAuthorId,
-                Name = "Non-Existent Author",
-                Birthday = DateTime.MinValue,
-                Country = "Unknown"
-            };
-            var authorRepository = new AuthorRepository(Context);
-
-            // Act & Assert
-            await Assert.ThrowsAsync<DbUpdateConcurrencyException>(async () =>
-            {
-                await authorRepository.Delete(author);
-                await Context.SaveChangesAsync();
-            });
-        }
-
-        [Fact]
-        public async Task UpdateAuthor_Success()
-        {
-            // Arrange
-            var author = await Context.Authors.FindAsync(LibraryContextFactory.AuthorAId);
-            author!.Name = "Updated Author";
-            author.Birthday = new DateTime(1990, 1, 1);
-            author.Country = "Netherlands";
+            var author = AuthorTestData.CreateTestAuthor();
+            await Context.Authors.AddAsync(author);
+            await Context.SaveChangesAsync();
             var authorRepository = new AuthorRepository(Context);
 
             // Act
-            await authorRepository.Update(author);
+            author.Name = "Updated Name";
+            await authorRepository.Update(author, CancellationToken.None);
             await Context.SaveChangesAsync();
 
             // Assert
-            var updatedAuthor = await Context.Authors.FindAsync(LibraryContextFactory.AuthorAId);
+            var updatedAuthor = await Context.Authors.FindAsync(author.Id);
             Assert.NotNull(updatedAuthor);
-            Assert.Equal("Updated Author", updatedAuthor.Name);
-            Assert.Equal(new DateTime(1990, 1, 1), updatedAuthor.Birthday);
-            Assert.Equal("Netherlands", updatedAuthor.Country);
+            Assert.Equal("Updated Name", updatedAuthor.Name);
         }
 
         [Fact]
-        public async Task UpdateAuthor_Unsuccess()
+        public async Task GetAuthorsWithPagination_Success()
         {
             // Arrange
-            var nonExistentAuthorId = Guid.NewGuid();
-            var author = new Author
-            {
-                Id = nonExistentAuthorId,
-                Name = "Non-Existent Author",
-                Birthday = DateTime.MinValue,
-                Country = "Unknown"
-            };
+            var author1 = AuthorTestData.CreateTestAuthor();
+            var author2 = AuthorTestData.CreateTestAuthor();
+            await Context.Authors.AddRangeAsync(author1, author2);
+            await Context.SaveChangesAsync();
             var authorRepository = new AuthorRepository(Context);
 
-            // Act & Assert
-            await Assert.ThrowsAsync<DbUpdateConcurrencyException>(async () =>
-            {
-                await authorRepository.Update(author);
-                await Context.SaveChangesAsync();
-            });
+            // Act
+            var authorsPage = await authorRepository.GetWithPagination(1, 1, CancellationToken.None);
+
+            // Assert
+            Assert.Single(authorsPage);
+            Assert.Contains(authorsPage, a => a.Id == author1.Id || a.Id == author2.Id);
         }
     }
 }

@@ -3,8 +3,6 @@ using Library.Application.Interfaces;
 using Library.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Library.Application.DTOs;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Library.WebAPI.Controllers
 {

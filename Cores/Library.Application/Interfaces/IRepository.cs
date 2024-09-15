@@ -1,7 +1,4 @@
-﻿using Library.Domain.Entities;
-using System.Threading;
-using System.Threading.Tasks;
-
+﻿
 namespace Library.Application.Interfaces
 {
     public interface IRepository<T, TId>

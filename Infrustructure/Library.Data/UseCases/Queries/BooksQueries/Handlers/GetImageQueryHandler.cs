@@ -1,5 +1,4 @@
-﻿using Library.Data.UseCases.Queries.BooksQueries;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;

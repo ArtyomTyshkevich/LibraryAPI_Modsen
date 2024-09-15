@@ -3,7 +3,6 @@ using Library.Data.Context;
 using Library.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Threading;
 
 namespace Library.Data.Repositories
 {

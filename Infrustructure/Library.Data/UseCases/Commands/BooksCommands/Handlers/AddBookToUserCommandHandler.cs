@@ -37,7 +37,7 @@ namespace Library.Data.UseCases.Commands.Handlers
 
                 book.StartRentDateTime = DateTime.UtcNow;
                 book.EndRentDateTime = DateTime.UtcNow.AddDays(60);
-                user!.Books.Add(book);
+                user.Books.Add(book);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 return "The book was issued successfully";

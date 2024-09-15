@@ -2,8 +2,6 @@
 using Library.Domain.Entities.Identity;
 using Library.Domain.Entities;
 using MediatR;
-using Microsoft.Extensions.Configuration;
-using Library.Application.Interfaces;
 using Library.Data.Context;
 using Microsoft.AspNetCore.Identity;
 

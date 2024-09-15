@@ -5,8 +5,6 @@ using Microsoft.AspNetCore.Http;
 using MediatR;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using Library.Data.UseCases.Commands.BooksCommands;
-
 namespace Library.Data.UseCases.Commands.BooksCommands.Handlers
 {
     public class AddImageToBookCommandHandler : IRequestHandler<AddImageToBookCommand, Unit>
