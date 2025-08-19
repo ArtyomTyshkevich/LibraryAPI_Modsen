@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ "master" ] 
+    branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
 
@@ -19,20 +19,26 @@ jobs:
         with:
           dotnet-version: '7.0.x'
 
-      - name: Restore dependencies
-        run: dotnet restore
+      - name: Restore WebAPI dependencies
+        run: dotnet restore Presentation/Library.WebAPI/Library.WebAPI.csproj
 
-      - name: Build
-        run: dotnet build --no-restore --configuration Release
+      - name: Restore Test dependencies
+        run: dotnet restore Tests/Library.Tests/Library.Tests.csproj
 
-      - name: Run tests
-        run: dotnet test --no-build --verbosity normal --configuration Release
+      - name: Build WebAPI
+        run: dotnet build Presentation/Library.WebAPI/Library.WebAPI.csproj --configuration Release
+
+      - name: Build Tests
+        run: dotnet build Tests/Library.Tests/Library.Tests.csproj --configuration Release
+
+      - name: Run Tests
+        run: dotnet test Tests/Library.Tests/Library.Tests.csproj --configuration Release --verbosity normal
 
       - name: Log in to DockerHub
         uses: docker/login-action@v2
         with:
-          username: ${{ artyomtyshkevich }}
-          password: ${{ F282101tt}}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push Docker images
         run: |
