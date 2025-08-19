@@ -22,7 +22,7 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore Presentation/Library.WebAPI/Library.WebAPI.csproj
 
-      - name: Build
+      - name: Build WebAPI
         run: dotnet build Presentation/Library.WebAPI/Library.WebAPI.csproj --no-restore --configuration Release
 
       - name: Run tests
